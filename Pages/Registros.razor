@@ -1,0 +1,178 @@
+﻿@page "/"
+@inject Tarea4.Modelos.AppDbContext _context
+@inject NavigationManager NavigationManager
+@inject Tarea4.Modelos.EstadoPersonajesService estadoPersonajesService
+@using Tarea4.Modelos
+@using Microsoft.EntityFrameworkCore
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #6c757d; /* Gris para encabezados */
+            color: white;
+        }
+
+    .btn-action {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-right: 5px;
+    }
+
+    .btn-edit {
+        background-color: #28a745; /* Verde para editar */
+    }
+
+    .btn-delete {
+        background-color: #dc3545; /* Rojo para eliminar */
+    }
+
+    .btn-add {
+        background-color: #007bff; /* Azul para agregar */
+    }
+
+    .btn-edit:hover {
+        background-color: #218838; /* Verde más oscuro */
+    }
+
+    .btn-delete:hover {
+        background-color: #c82333; /* Rojo más oscuro */
+    }
+
+    .btn-add:hover {
+        background-color: #0056b3; /* Azul más oscuro */
+    }
+
+    .search-bar {
+        margin-bottom: 20px;
+    }
+
+        .search-bar input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 5px;
+            width: calc(87% - 110px); /* Barra de buscar más larga */
+        }
+
+        .search-bar button {
+            padding: 10px 15px;
+            background-color: #005eff; /* Azul para el botón de buscar */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            .search-bar button:hover {
+                background-color: #0000ff; /* Azul más oscuro */
+            }
+</style>
+
+<div class="container">
+    <h3><center><strong>Registro</strong></center></h3>
+
+    <div class="search-bar">
+        <InputText @bind-Value="searchTerm" placeholder="Buscar por cualquier campo..." />
+        <button @onclick="FiltrarResultados">Buscar</button>
+        <button @onclick="AgregarPersonaje" class="btn-add">Nuevo Personaje</button>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th><center>Nombre</center></th>
+                <th><center>Apodo</center></th>
+                <th><center>Raza</center></th>
+                <th><center>Edad</center></th>
+                <th><center>Poder Característico</center></th>
+                <th><center>Acciones</center></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var personaje in personajes)
+            {
+                <tr>
+                    <td>@personaje.Nombre</td>
+                    <td>@personaje.Apodo</td>
+                    <td>@personaje.Raza</td>
+                    <td>@personaje.Edad</td>
+                    <td>@personaje.Poder</td>
+                    <td>
+                        <button class="btn-action btn-edit" @onclick="() => Editar(personaje.Id)">Editar</button>
+                        <button class="btn-action btn-delete" @onclick="() => Eliminar(personaje.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private List<Personaje> personajes = new List<Personaje>();
+    private string searchTerm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        estadoPersonajesService.OnChange += ActualizarPersonajes;
+        personajes = estadoPersonajesService.Personajes;
+    }
+
+    private void ActualizarPersonajes()
+    {
+        personajes = estadoPersonajesService.Personajes;
+        StateHasChanged();
+    }
+
+    private void FiltrarResultados()
+    {
+        personajes = personajes.Where(personaje => personaje.Nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                                                    personaje.Apodo.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                                                    personaje.Raza.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                                                    personaje.Poder.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    private void AgregarPersonaje()
+    {
+        NavigationManager.NavigateTo("/registro-personaje");
+    }
+
+    private void Editar(int id)
+    {
+        NavigationManager.NavigateTo($"/editar-personaje/{id}");
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var personaje = await _context.Personajes.FindAsync(id);
+        if (personaje != null)
+        {
+            _context.Personajes.Remove(personaje);
+            await _context.SaveChangesAsync();
+            estadoPersonajesService.Personajes.Remove(personaje); 
+        }
+    }
+}

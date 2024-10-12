@@ -1,0 +1,121 @@
+﻿@page "/registro-personaje"
+@inject Tarea4.Modelos.AppDbContext _context
+@inject NavigationManager NavigationManager
+@using Tarea4.Modelos
+@using Microsoft.EntityFrameworkCore
+
+<style>
+    .container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .btn-submit {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        color: #ffffff;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-right: 10px;
+    }
+
+    .btn-save {
+        background-color: #28a745; /* Verde para guardar */
+    }
+
+    .btn-cancel {
+        background-color: #dc3545; /* Rojo para cancelar */
+    }
+
+    .btn-save:hover {
+        background-color: #2a7b44; /* Verde más oscuro */
+    }
+
+    .btn-cancel:hover {
+        background-color: #c82333; /* Rojo más oscuro */
+    }
+
+    .validation-message {
+        color: red; /* Color rojo para los mensajes de validación */
+        font-size: 0.875em; /* Tamaño de fuente más pequeño */
+    }
+</style>
+
+<div class="container">
+    <h3><center><strong>Registro de Personaje</strong></center></h3>
+
+    <EditForm Model="@nuevoPersonaje" OnValidSubmit="RegistrarPersonaje">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label>Nombre:</label>
+            <InputText @bind-Value="nuevoPersonaje.Nombre" class="form-control" />
+            <ValidationMessage For="@(() => nuevoPersonaje.Nombre)" class="validation-message" />
+        </div>
+
+        <div class="form-group">
+            <label>Apodo:</label>
+            <InputText @bind-Value="nuevoPersonaje.Apodo" class="form-control" />
+            <ValidationMessage For="@(() => nuevoPersonaje.Apodo)" class="validation-message" />
+        </div>
+
+        <div class="form-group">
+            <label>Raza:</label>
+            <InputText @bind-Value="nuevoPersonaje.Raza" class="form-control" />
+            <ValidationMessage For="@(() => nuevoPersonaje.Raza)" class="validation-message" />
+        </div>
+
+        <div class="form-group">
+            <label>Foto URL:</label>
+            <InputText @bind-Value="nuevoPersonaje.Foto" class="form-control" />
+            <ValidationMessage For="@(() => nuevoPersonaje.Foto)" class="validation-message" />
+        </div>
+
+        <div class="form-group">
+            <label>Edad:</label>
+            <InputNumber @bind-Value="nuevoPersonaje.Edad" class="form-control" />
+            <ValidationMessage For="@(() => nuevoPersonaje.Edad)" class="validation-message" />
+        </div>
+
+        <div class="form-group">
+            <label>Poder Característico:</label>
+            <InputText @bind-Value="nuevoPersonaje.Poder" class="form-control" />
+            <ValidationMessage For="@(() => nuevoPersonaje.Poder)" class="validation-message" />
+        </div>
+
+        <button type="submit" class="btn-submit btn-save">Registrar personaje</button>
+        <button type="button" class="btn-submit btn-cancel" @onclick="Regresar">Cancelar</button>
+    </EditForm>
+</div>
+
+@code {
+    private Personaje nuevoPersonaje = new Personaje();
+
+    private async Task RegistrarPersonaje()
+    {
+        _context.Personajes.Add(nuevoPersonaje);
+        await _context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void Regresar()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}
